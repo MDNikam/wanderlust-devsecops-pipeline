@@ -24,6 +24,30 @@ pipeline {
             }
         }
 
+        stage('Verify Backend') {
+            steps {
+                dir('backend') {
+                    sh 'npm list --depth=0'
+                }
+            }
+        }
+
+        stage('Prettier Check') {
+            steps {
+                dir('backend') {
+                    sh 'npm run check'
+                }
+            }
+        }
+
+        stage('Backend Tests') {
+            steps {
+                dir('backend') {
+                    sh 'npm run test:ci'
+                }
+            }
+        }
+
         stage('Install Frontend Dependencies') {
             steps {
                 dir('frontend') {
@@ -39,16 +63,15 @@ pipeline {
                 }
             }
         }
-
     }
 
     post {
         success {
-            echo 'Build Successful'
+            echo '🎉 Build Successful'
         }
 
         failure {
-            echo 'Build Failed'
+            echo '❌ Build Failed'
         }
     }
 }
