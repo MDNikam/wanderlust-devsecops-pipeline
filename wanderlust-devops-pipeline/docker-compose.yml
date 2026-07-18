@@ -1,0 +1,40 @@
+services:
+
+  mongodb:
+    image: mongo:7
+    container_name: mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - wanderlust-network
+
+  backend:
+    image: wanderlust-backend:v1
+    container_name: wanderlust-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env
+    networks:
+      - wanderlust-network
+
+  frontend:
+    image: wanderlust-frontend:v1
+    container_name: wanderlust-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    networks:
+      - wanderlust-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  wanderlust-network:
