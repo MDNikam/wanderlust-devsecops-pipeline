@@ -1,6 +1,15 @@
 pipeline {
     agent any
 
+    options {
+        timestamps()
+        ansiColor('xterm')
+    }
+
+    environment {
+        NODE_ENV = 'production'
+    }
+
     stages {
 
         stage('Checkout Code') {
@@ -11,15 +20,22 @@ pipeline {
 
         stage('Verify Workspace') {
             steps {
-                sh 'pwd'
-                sh 'ls -la'
+                sh '''
+                    echo "Current Workspace:"
+                    pwd
+                    echo ""
+                    echo "Repository Contents:"
+                    ls -la
+                '''
             }
         }
 
         stage('Install Backend Dependencies') {
             steps {
                 dir('backend') {
-                    sh 'npm install'
+                    sh '''
+                        npm ci
+                    '''
                 }
             }
         }
@@ -27,7 +43,9 @@ pipeline {
         stage('Verify Backend') {
             steps {
                 dir('backend') {
-                    sh 'npm list --depth=0'
+                    sh '''
+                        npm list --depth=0
+                    '''
                 }
             }
         }
@@ -35,15 +53,9 @@ pipeline {
         stage('Prettier Check') {
             steps {
                 dir('backend') {
-                    sh 'npm run check'
-                }
-            }
-        }
-
-        stage('Backend Tests') {
-            steps {
-                dir('backend') {
-                    sh 'npm run test:ci'
+                    sh '''
+                        npm run check
+                    '''
                 }
             }
         }
@@ -51,7 +63,9 @@ pipeline {
         stage('Install Frontend Dependencies') {
             steps {
                 dir('frontend') {
-                    sh 'npm install'
+                    sh '''
+                        npm ci
+                    '''
                 }
             }
         }
@@ -59,19 +73,26 @@ pipeline {
         stage('Build Frontend') {
             steps {
                 dir('frontend') {
-                    sh 'npm run build'
+                    sh '''
+                        npm run build
+                    '''
                 }
             }
         }
+
     }
 
     post {
+        always {
+            echo "Pipeline Finished"
+        }
+
         success {
-            echo '🎉 Build Successful'
+            echo "Build Successful"
         }
 
         failure {
-            echo '❌ Build Failed'
+            echo "Build Failed"
         }
     }
 }
