@@ -1,18 +1,14 @@
 pipeline {
     agent any
 
-    options {
-        timestamps()
-        ansiColor('xterm')
-    }
-
     environment {
-        NODE_ENV = 'production'
+        BACKEND_DIR = 'backend'
+        FRONTEND_DIR = 'frontend'
     }
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout Source') {
             steps {
                 checkout scm
             }
@@ -21,40 +17,50 @@ pipeline {
         stage('Verify Workspace') {
             steps {
                 sh '''
-                    echo "Current Workspace:"
-                    pwd
-                    echo ""
-                    echo "Repository Contents:"
-                    ls -la
+                echo "Current Directory:"
+                pwd
+
+                echo "Repository Contents:"
+                ls -la
                 '''
             }
         }
 
         stage('Install Backend Dependencies') {
             steps {
-                dir('backend') {
+                dir("${BACKEND_DIR}") {
                     sh '''
-                        npm ci
+                    npm install
                     '''
                 }
             }
         }
 
-        stage('Verify Backend') {
+        stage('Verify Backend Packages') {
             steps {
-                dir('backend') {
+                dir("${BACKEND_DIR}") {
                     sh '''
-                        npm list --depth=0
+                    npm list --depth=0
                     '''
                 }
             }
         }
 
-        stage('Prettier Check') {
+        stage('Backend Formatting Check') {
             steps {
-                dir('backend') {
+                dir("${BACKEND_DIR}") {
                     sh '''
-                        npm run check
+                    npm run check
+                    '''
+                }
+            }
+        }
+
+        stage('Backend Unit Tests') {
+            steps {
+                dir("${BACKEND_DIR}") {
+                    sh '''
+                    npm run test:ci
                     '''
                 }
             }
@@ -62,37 +68,41 @@ pipeline {
 
         stage('Install Frontend Dependencies') {
             steps {
-                dir('frontend') {
+                dir("${FRONTEND_DIR}") {
                     sh '''
-                        npm ci
+                    npm install
                     '''
                 }
             }
         }
 
-        stage('Build Frontend') {
+        stage('Frontend Build') {
             steps {
-                dir('frontend') {
+                dir("${FRONTEND_DIR}") {
                     sh '''
-                        npm run build
+                    npm run build
                     '''
                 }
             }
         }
-
     }
 
     post {
-        always {
-            echo "Pipeline Finished"
-        }
 
         success {
-            echo "Build Successful"
+            echo '================================='
+            echo 'Build Completed Successfully'
+            echo '================================='
         }
 
         failure {
-            echo "Build Failed"
+            echo '================================='
+            echo 'Build Failed'
+            echo '================================='
+        }
+
+        always {
+            cleanWs()
         }
     }
 }
