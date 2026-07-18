@@ -14,7 +14,8 @@
     "nodemon": "^3.0.1"
   },
   "scripts": {
-    "test": "jest --watchAll  --detectOpenHandles --verbose --coverage ",
+    "test": "jest --watchAll --detectOpenHandles --verbose --coverage",
+    "test:ci": "jest --coverage --ci",
     "start": "nodemon server.js",
     "check": "prettier --check .",
     "format": "prettier --write .",
