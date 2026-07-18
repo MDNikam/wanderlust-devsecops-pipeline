@@ -1,13 +1,9 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'NodeJS-24'
-    }
-
     stages {
 
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
                 checkout scm
             }
@@ -42,6 +38,17 @@ pipeline {
                     sh 'npm run build'
                 }
             }
+        }
+
+    }
+
+    post {
+        success {
+            echo 'Build Successful'
+        }
+
+        failure {
+            echo 'Build Failed'
         }
     }
 }
